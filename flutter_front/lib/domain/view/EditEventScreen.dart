@@ -4,25 +4,40 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_front/core/storage/secure_storage.dart';
 
-class EventRegisterScreen extends StatefulWidget {
-  const EventRegisterScreen({super.key});
+class EditEventScreen extends StatefulWidget {
+  final Map<String, dynamic> eventData;
+
+  const EditEventScreen({super.key, required this.eventData});
 
   @override
-  State<EventRegisterScreen> createState() => _EventRegisterScreenState();
+  State<EditEventScreen> createState() => _EditEventScreenState();
 }
 
-class _EventRegisterScreenState extends State<EventRegisterScreen> {
+class _EditEventScreenState extends State<EditEventScreen> {
   final Color classicBlue = const Color(0xFFF7323F);
+  final _storage = SecureStorage.instance;
 
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _maxParticipantsController = TextEditingController();
-
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
+  late TextEditingController _locationController;
+  late TextEditingController _maxParticipantsController;
   DateTime? _startDate;
   DateTime? _endDate;
 
-  final _storage = SecureStorage.instance;
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.eventData['title']?.toString() ?? '');
+    _contentController = TextEditingController(text: widget.eventData['content']?.toString() ?? '');
+    _locationController = TextEditingController(text: widget.eventData['location']?.toString() ?? '');
+    _maxParticipantsController = TextEditingController(text: widget.eventData['maxParticipants']?.toString() ?? '');
+    if (widget.eventData['startDate'] != null) {
+      _startDate = DateTime.tryParse(widget.eventData['startDate'].toString());
+    }
+    if (widget.eventData['endDate'] != null) {
+      _endDate = DateTime.tryParse(widget.eventData['endDate'].toString());
+    }
+  }
 
   Future<void> _pickDate(bool isStart) async {
     final picked = await showDatePicker(
@@ -42,7 +57,8 @@ class _EventRegisterScreenState extends State<EventRegisterScreen> {
     }
   }
 
-  Future<void> _submitEvent() async {
+  Future<void> _submitUpdate() async {
+    final id = widget.eventData['id'];
     String? token = await _storage.getAccessToken();
     if (token == null) return;
 
@@ -50,11 +66,9 @@ class _EventRegisterScreenState extends State<EventRegisterScreen> {
     String baseUrl = rawBaseUrl.startsWith('http') ? rawBaseUrl : 'http://$rawBaseUrl';
     if (!baseUrl.contains(':8080')) baseUrl = '$baseUrl:8080';
 
-    final String finalUrl = '${baseUrl.endsWith('/') ? baseUrl : '$baseUrl/'}api/events';
-
     try {
-      final response = await http.post(
-        Uri.parse(finalUrl),
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/events/$id'),
         headers: {
           "Content-Type": "application/json; charset=UTF-8",
           "Authorization": "Bearer $token",
@@ -69,9 +83,9 @@ class _EventRegisterScreenState extends State<EventRegisterScreen> {
         }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('행사가 등록되었습니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('수정되었습니다.')));
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -84,13 +98,13 @@ class _EventRegisterScreenState extends State<EventRegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('행사 등록', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: const Text('행사 수정', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           TextButton(
-            onPressed: _submitEvent,
-            child: Text('등록', style: TextStyle(color: classicBlue, fontWeight: FontWeight.bold)),
+            onPressed: _submitUpdate,
+            child: Text('저장', style: TextStyle(color: classicBlue, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

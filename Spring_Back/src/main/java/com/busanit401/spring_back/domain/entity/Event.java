@@ -1,5 +1,6 @@
 package com.busanit401.spring_back.domain.entity;
 
+import com.busanit401.spring_back.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

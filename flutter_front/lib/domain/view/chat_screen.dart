@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../../shshare_house/Shared_Second_House_Operation_Platform/flutter_front/lib/domain/controller/chat_controller.dart';
+import '../controller/chat_controller.dart';
 
-class ChatScreen extends StatefulWidget { // StatefulWidget으로 변경
+class ChatScreen extends StatefulWidget {
   final int myId;
   final String myName;
   final int roomId;
@@ -26,10 +26,21 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // 화면이 다 그려진 후 채팅방 연결/구독 시작
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatController>().init(widget.roomId);
     });
+  }
+
+  String _formatTime(String? timestamp) {
+    if (timestamp == null) return '';
+    try {
+      final dt = DateTime.parse(timestamp);
+      final hour = dt.hour.toString().padLeft(2, '0');
+      final minute = dt.minute.toString().padLeft(2, '0');
+      return '$hour:$minute';
+    } catch (_) {
+      return '';
+    }
   }
 
   @override
@@ -46,26 +57,47 @@ class _ChatScreenState extends State<ChatScreen> {
               itemBuilder: (context, index) {
                 final msg = ctrl.messages[index];
                 final isMe = msg.senderId == widget.myId;
+                final timeStr = _formatTime(msg.timestamp);
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Align(
-                    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isMe ? Colors.blue : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Column(
+                    crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: [
+                      if (!isMe)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Text(msg.senderName, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        ),
+                      Row(
+                        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          if (!isMe)
-                            Text(msg.senderName, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                          Text(msg.content, style: TextStyle(color: isMe ? Colors.white : Colors.black)),
+                          if (isMe && timeStr.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Text(timeStr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                            ),
+                          Container(
+                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isMe ? Colors.blue : Colors.grey[300],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              msg.content,
+                              style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                            ),
+                          ),
+                          if (!isMe && timeStr.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Text(timeStr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                            ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
                 );
               },
@@ -85,7 +117,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   icon: const Icon(Icons.send),
                   onPressed: () {
                     if (_textController.text.isNotEmpty) {
-                      // 변경된 sendMessage 호출 방식
                       ctrl.sendMessage(widget.roomId, widget.myId, widget.myName, _textController.text);
                       _textController.clear();
                     }

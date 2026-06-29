@@ -40,4 +40,23 @@ public class EventController {
         Event savedEvent = eventService.register(eventDTO, principal.getName());
         return ResponseEntity.ok(savedEvent);
     }
+    // 3. 행사 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody EventDTO eventDTO, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+        eventService.update(id, eventDTO, principal.getName());
+        return ResponseEntity.ok("수정되었습니다.");
+    }
+
+    // 4. 행사 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+        eventService.delete(id, principal.getName());
+        return ResponseEntity.ok("삭제되었습니다.");
+    }
 }

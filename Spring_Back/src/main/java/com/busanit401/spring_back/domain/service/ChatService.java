@@ -1,8 +1,10 @@
 package com.busanit401.spring_back.domain.service;
 
 import com.busanit401.spring_back.domain.User;
+import com.busanit401.spring_back.domain.entity.ChatMessage;
 import com.busanit401.spring_back.domain.entity.ChatRoom;
 import com.busanit401.spring_back.domain.entity.ChatRoomUser;
+import com.busanit401.spring_back.domain.repository.ChatMessageRepository;
 import com.busanit401.spring_back.domain.repository.ChatRoomRepository;
 import com.busanit401.spring_back.domain.repository.ChatRoomUserRepository;
 import com.busanit401.spring_back.domain.repository.UserRepository;
@@ -23,6 +25,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
     private final UserRepository userRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     @Transactional
     public Long createChatRoom(ChatRoomCreateRequestDto dto) {
@@ -64,5 +67,9 @@ public class ChatService {
                     return o2.getLastMessageAt().compareTo(o1.getLastMessageAt());
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<ChatMessage> getMessages(Long roomId) {
+        return chatMessageRepository.findByChatRoomIdOrderByCreatedDateAsc(roomId);
     }
 }

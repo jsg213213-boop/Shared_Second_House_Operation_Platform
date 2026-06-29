@@ -478,9 +478,15 @@ class _MainScreenState extends State<MainScreen> {
           const SizedBox(height: 32),
 
           // TODO: [개발 완료 시 삭제] 팀원 화면 링크
+          // const Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: 16),
+          //   child: Text('개발용 화면 링크', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          // ),
+          // const SizedBox(height: 12),
+          // const DevScreenLinks(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text('개발용 화면 링크', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            child: Text('커뮤니티', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           ),
           const SizedBox(height: 12),
           const DevScreenLinks(),
